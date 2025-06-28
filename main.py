@@ -9,19 +9,33 @@ from google import genai
 
 client = genai.Client(api_key=api_key)
 
+
+
+
+
+#Create new list and set the only message(for now) as the user's prompt:
+from google.genai import types
+import argparse
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument("user_prompt") # for the prompt
+parser.add_argument("--verbose", action ="store_true") # for --verbose flag
+
+args = parser.parse_args()
+
+messages = [
+    types.Content(role="user", parts=[types.Part(text=args.user_prompt)]),
+]
+
 response = client.models.generate_content(
-    model='gemini-2.0-flash-001',
-    contents=["Why is Boot.dev such a great place to learn backend development? Use one paragraph maximum."]
+    model="gemini-2.0-flash-001",
+    contents=messages,
 )
 
 print(response.text)
-print("Prompt tokens:", response.usage_metadata.prompt_token_count)
-print("Response tokens:", response.usage_metadata.candidates_token_count)
 
-print("This script is called:", sys.argv[0])
-print("Arguments passed", sys.argv[1:])
-
-if len(sys.argv) < 2:
-    print("Error,no prompt detected... ")
-    sys.exit(1) #Exits script with error code 1
-
+if args.verbose:
+    print(f"User prompt: {args.user_prompt}")
+    print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
+    print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
