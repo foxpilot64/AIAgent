@@ -10,10 +10,6 @@ from google import genai
 client = genai.Client(api_key=api_key)
 
 
-
-
-
-#Create new list and set the only message(for now) as the user's prompt:
 from google.genai import types
 import argparse
 
