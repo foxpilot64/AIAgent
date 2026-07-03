@@ -1,54 +1,43 @@
 import os
 from dotenv import load_dotenv
-import sys
-import argparse
-from google import genai
-from google.genai import types
-from prompts import system_prompt
-from call_function import available_functions
+from openai import OpenAI
+
 
 
 #define the main function
 def main() -> None:
-    #Parse arguments
-    parser = argparse.ArgumentParser(description="AI Code Assistant")
-    parser.add_argument("user_prompt", type=str, help="user_prompt")
-    args = parser.parse_args()
    
     #Load env/get API key
     load_dotenv()
-    api_key = os.environ.get("GEMINI_API_KEY")
+    api_key = os.environ.get("OPENROUTER_API_KEY")
 
+    if api_key is None:
+        raise RuntimeError("OPENROUTER_API_KEY not found in this environment")
+    
+   
     #Build the messages list
     messages = [
-        types.Content(role="user", parts=[types.Part(text=args.user_prompt)])
+        {
+            "role": "user",
+            "content": "Why is Boot.dev such a great place to learn backend development? Use one paragraph maximum.",
+        }
     ]
 
 
     #Create the client
-    client = genai.Client(api_key=api_key)
+    client = OpenAI(
+        base_url="https://openrouter.ai/api/v1",
+        api_key=api_key,
+    )
     #Make the API call with messages
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=messages,
-        config=types.GenerateContentConfig(
-            tools=[available_functions], system_instruction=system_prompt,
-            temperature=0
-        ),
+    response = client.chat.completions.create(
+        model="openrouter/free",
+        messages=messages,
     )
 
-    #check tokens
-    if not response.usage_metadata:
-        raise RuntimeError("Something went wrong!")
+    print(response.choices[0].message.content)
 
-    print("Prompt tokens: ", response.usage_metadata.prompt_token_count)
-    print("Response tokens: ", response.usage_metadata.candidates_token_count)
-
-    if response.function_calls:
-        for function_call in response.function_calls:
-            print(f"Calling function: {function_call.name}({function_call.args})")
-    else:
-        print(response.text)
+  
 
 
 if __name__ == "__main__":
