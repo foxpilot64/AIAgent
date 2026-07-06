@@ -15,7 +15,7 @@ schema_run_python_file = {
                 },
                 "args": {
                     "type": "array",
-                "description": "Optional command line arguments passed to the file that is being executed.",
+                    "description": "Optional command line arguments passed to the file that is being executed.",
                     "items": {
                         "type": "string",
                        
