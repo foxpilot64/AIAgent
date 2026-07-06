@@ -1,7 +1,29 @@
 import os
 from config import MAX_CHARS
 
+schema_get_file_content = {
+    "type": "function",
+    "function": {
+        "name": "get_file_content",
+        "description": "Check if file is within working dir and valid file type, set char limit and read file",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "file_path": {
+                    "type": "string",
+                    "description": "The path to the file to read",
+                },
+            },
+            "required": [
+            "file_path"
+            ]
+    
+        },
+    },
+}
+
 def get_file_content(working_directory: str, file_path: str) -> str:
+
     try:
     
         base_directory = os.path.abspath(working_directory)
