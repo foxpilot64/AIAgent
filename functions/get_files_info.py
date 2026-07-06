@@ -1,53 +1,45 @@
 import os
 
-#Function declaration
 schema_get_files_info = {
-    "name": "get_files_info",
-    "description": "Lists files in a specified directory relative to the working directory, providing file size and directory status",
-    "parameters": {
-        "type": "object",
-        "properties": {
-            "directory": {
-                "type": "string",
-                "description": "Directory path to list files from, relative to the working directory (default is the working directory itself)",
-            }
+    "type": "function",
+    "function": {
+        "name": "get_files_info",
+        "description": "Lists files in a specified directory relative to the working directory, providing file size and directory status",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "directory": {
+                    "type": "string",
+                    "description": "Directory path to list files from, relative to the working directory (default is the working directory itself)",
+                },
+            },
         },
     },
 }
 
-def get_files_info(working_directory, directory=None):
+def get_files_info(working_directory: str, directory: str = ".") -> str:
     try:
+        working_dir_abs = os.path.abspath(working_directory)
+        target_dir = os.path.normpath(os.path.join(working_dir_abs, directory))
 
-        working_directory_abs = os.path.abspath(working_directory)
-   
+        if os.path.commonpath([working_dir_abs, target_dir]) != working_dir_abs:
+            return f'Error: Cannot list "{directory}" as it is outside the permitted working directory'
 
-        if directory is None:
-            directory_to_check = "."
-        else:
-            directory_to_check = directory
+        if not os.path.isdir(target_dir):
+            return f'Error: "{directory}" is not a directory'
+        
+        
 
-    
-        directory_to_check_abs = os.path.abspath(os.path.join(working_directory_abs, directory_to_check))
-
-
-        if os.path.commonpath([working_directory_abs, directory_to_check_abs]) != working_directory_abs:
-            return f'Error: Cannot list "{directory_to_check}" as it is outside the permitted working directory'
-
-        if not os.path.isdir(directory_to_check_abs):
-            return(f'Error: "{directory_to_check}" is not a directory')
-
-
-    #Iterate over items in target directory and record name, file size, and if it is a directory.
         files_info = []
-        for items in os.listdir(directory_to_check_abs):
-            filepath = os.path.join(directory_to_check_abs, items)
-            size = os.path.getsize(filepath)
-            is_directory = os.path.isdir(filepath)
-       
-            formatted_string = f"- {items}: file_size={size} bytes, is_dir={is_directory}"
+        for item in os.listdir(target_dir):
+            item_path = os.path.join(target_dir, item)
+            size = os.path.getsize(item_path)
+            is_dir = os.path.isdir(item_path)
 
-            files_info.append(formatted_string)
+
+            files_info.append(f"- {item}: file_size={size} bytes, is_dir={is_dir}")
+
         return "\n".join(files_info)
-    
+
     except Exception as e:
         return f"Error: {e}"

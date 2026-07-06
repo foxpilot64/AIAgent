@@ -18,6 +18,10 @@ def test() -> None:
     print("Result for '../' directory:")
     print(result_parent)
 
+    result_main = get_files_info("calculator", "main.py")
+    print("Result for 'main.py':")
+    print(result_main)
+
 if __name__ =="__main__":
     test()
     
