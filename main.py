@@ -35,6 +35,14 @@ def main() -> None:
         messages=messages,
     )
 
+    #Keep track of token usage
+    if not response.usage:
+        raise RuntimeError("API response appears to be malformed")
+    
+    print("Prompt tokens:", response.usage.prompt_tokens)
+    print("Response tokens:", response.usage.completion_tokens)
+    print("Response:")
+    
     print(response.choices[0].message.content)
 
   
