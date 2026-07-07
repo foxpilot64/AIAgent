@@ -1,8 +1,7 @@
 import os
 import argparse
-import json
 from prompts import system_prompt
-from call_function import available_functions
+from call_function import available_functions, call_function
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -44,7 +43,7 @@ def main() -> None:
     )
     #Make the API call with messages
     response = client.chat.completions.create(
-        model="openrouter/free",
+        model="tencent/hy3:free",
         messages=messages,
         tools=available_functions,
     )
@@ -52,10 +51,14 @@ def main() -> None:
     message = response.choices[0].message
     if message.tool_calls:
         for tool_call in message.tool_calls:
-            function_args = json.loads(tool_call.function.arguments or "{}")
-            print(f"Calling function: {tool_call.function.name}({function_args})")
+            result_message = call_function(tool_call, args.verbose)
+            if not result_message["content"]:
+                raise Exception("content empty")
+            if args.verbose:
+                print(f"-> {result_message['content']}")
     else:
         print(message.content)
+  
 
     #Keep track of token usage
     if not response.usage:
@@ -67,8 +70,7 @@ def main() -> None:
         print(f"Response tokens: {response.usage.completion_tokens}")
     
 
-    
-    print(response.choices[0].message.content)
+ 
 
   
 
