@@ -1,5 +1,6 @@
 import os
 import argparse
+import sys
 from prompts import system_prompt
 from call_function import available_functions, call_function
 from dotenv import load_dotenv
@@ -41,12 +42,40 @@ def main() -> None:
         base_url="https://openrouter.ai/api/v1",
         api_key=api_key,
     )
+
+    for _ in range(20):
+
     #Make the API call with messages
-    response = client.chat.completions.create(
-        model="tencent/hy3:free",
-        messages=messages,
-        tools=available_functions,
+        response = client.chat.completions.create(
+            model="tencent/hy3:free",
+            messages=messages,
+            tools=available_functions,
     )
+        message = response.choices[0].message
+        messages.append(message)
+
+        if not message.tool_calls:
+            return message.content
+        for tool_call in message.tool_calls:
+            result_message = call_function(tool_call)
+            messages.append(result_message)
+
+    print("Max number of iterations reached")
+    sys.exit(1)
+
+
+        
+
+
+
+
+    
+
+
+
+
+
+
     #Grab message, if set, iterate and print args, if none just print as normal
     message = response.choices[0].message
     if message.tool_calls:
