@@ -1,10 +1,14 @@
 import os
 import argparse
 import sys
-from prompts import system_prompt
-from call_function import available_functions, call_function
+
 from dotenv import load_dotenv
 from openai import OpenAI
+
+from prompts import system_prompt
+from call_function import available_functions, call_function
+
+
 
 
 
@@ -51,13 +55,23 @@ def main() -> None:
             messages=messages,
             tools=available_functions,
     )
+    
+        if not response.usage:
+            raise RuntimeError("API response appears to be malformed")
+    
+        if args.verbose:
+            print(f"User prompt: {args.user_prompt}")
+            print(f"Prompt tokens: {response.usage.prompt_tokens}")
+            print(f"Response tokens: {response.usage.completion_tokens}")
+        
         message = response.choices[0].message
         messages.append(message)
 
         if not message.tool_calls:
-            return message.content
+            print(message.content)
+            return
         for tool_call in message.tool_calls:
-            result_message = call_function(tool_call)
+            result_message = call_function(tool_call, args.verbose)
             messages.append(result_message)
 
     print("Max number of iterations reached")
@@ -65,44 +79,6 @@ def main() -> None:
 
 
         
-
-
-
-
-    
-
-
-
-
-
-
-    #Grab message, if set, iterate and print args, if none just print as normal
-    message = response.choices[0].message
-    if message.tool_calls:
-        for tool_call in message.tool_calls:
-            result_message = call_function(tool_call, args.verbose)
-            if not result_message["content"]:
-                raise Exception("content empty")
-            if args.verbose:
-                print(f"-> {result_message['content']}")
-    else:
-        print(message.content)
-  
-
-    #Keep track of token usage
-    if not response.usage:
-        raise RuntimeError("API response appears to be malformed")
-    
-    if args.verbose:
-        print(f"User prompt: {args.user_prompt}")
-        print(f"Prompt tokens: {response.usage.prompt_tokens}")
-        print(f"Response tokens: {response.usage.completion_tokens}")
-    
-
- 
-
-  
-
 
 if __name__ == "__main__":
     main()
